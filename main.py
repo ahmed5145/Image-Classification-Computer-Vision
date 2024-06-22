@@ -1,21 +1,23 @@
 import os
 import numpy as np
+import pickle
 
 from skimage.io import imread
 from skimage.transform import resize
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
 
 # Prepare data
-input_dir = ''
-categories = ['']
+input_dir = 'C:\\Users\\hussah01\\Desktop\\CS Projects\\Image Classification Computer Vision\\Chess'
+categories = ['Bishop', 'King', 'Knight', 'Pawn', 'Queen', 'Rook']
 data = []
 labels = []
 for category_idx, category in enumerate(categories):
     for file in os.listdir(os.path.join(input_dir,category)):
         img_path = os.path.join(input_dir, category, file)
         img = imread(img_path)
-        img = resize(img, (15, 15))
+        img = resize(img, (15, 15, img.shape[2]))
         data.append(img.flatten())
         labels.append(category_idx)
         
@@ -34,3 +36,12 @@ grid_search = GridSearchCV(classifier, parameters)
 grid_search.fit(x_train, y_train)
 
 # Test performance
+best_estimator = grid_search.best_estimator_
+
+y_prediction = best_estimator.predict(x_test)
+
+score = accuracy_score(y_prediction, y_test)
+
+print('{}% of samles were correctly classified'.format(str(score*100)))
+
+pickle.dump(best_estimator, open('./model.p', 'wb'))
